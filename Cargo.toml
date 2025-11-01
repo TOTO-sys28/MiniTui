@@ -1,0 +1,59 @@
+[package]
+name = "musicplayer"
+version = "0.1.0"
+edition = "2021"
+authors = ["Your Name <your.email@example.com>"]
+description = "Minimalist music player for terminal with background daemon support"
+license = "MIT"
+
+[[bin]]
+name = "musicplayer"
+path = "src/main.rs"
+
+[dependencies]
+# Audio playback
+rodio = "0.19"
+symphonia = { version = "0.5", features = ["all"] }
+minimp3 = "0.5"
+
+# Async runtime
+tokio = { version = "1.40", features = ["full"] }
+
+# CLI
+clap = { version = "4.5", features = ["derive"] }
+
+# Serialization
+serde = { version = "1.0", features = ["derive"] }
+serde_json = "1.0"
+
+# IPC - using tokio Unix sockets for simplicity
+# interprocess = { version = "2.2", features = ["tokio"] }
+
+# File handling
+walkdir = "2.5"
+
+# Utilities
+anyhow = "1.0"
+thiserror = "1.0"
+directories = "5.0"
+
+# Logging
+tracing = "0.1"
+tracing-subscriber = "0.3"
+
+# GUI (Linux/macOS only)
+# TUI (cross-platform)
+ratatui = "0.28"
+crossterm = "0.28"
+
+[target.'cfg(not(target_os = "windows"))'.dependencies]
+gtk4 = "0.10"
+glib = "0.18"
+gio = "0.18"
+tray-icon = "0.14"
+
+# Daemon support
+daemonize = "0.5"
+
+[dev-dependencies]
+tempfile = "3.8"

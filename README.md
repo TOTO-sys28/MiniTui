@@ -26,7 +26,7 @@ A minimal, cross-platform music player with TUI interface, daemon architecture, 
 
 ```bash
 # Clone repository
-git clone [<repository-url>](https://github.com/TOTO-sys28/MiniTui.git)
+git clone https://github.com/TOTO-sys28/MiniTui.git
 cd musicplayer
 
 # Build

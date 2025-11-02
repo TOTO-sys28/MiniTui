@@ -617,6 +617,7 @@ fn ui_player(frame: &mut Frame, status: &PlayerStatus, theme: &ThemeStyle) {
     let status_text = format!("{} | Volume: {}% | Tracks: {} | Theme: {}", state_text, status.volume, status.playlist_length, theme.theme.name());
     frame.render_widget(
         Paragraph::new(status_text)
+            .wrap(Wrap { trim: true })
             .block(Block::default().borders(Borders::ALL).title("Status").style(theme.status_style())),
         chunks[0]
     );
@@ -689,6 +690,7 @@ fn ui_player(frame: &mut Frame, status: &PlayerStatus, theme: &ThemeStyle) {
     let help_text = "[Space] Play/Pause | [S] Stop | [N/?] Next | [B/?] Prev | [+/-] Volume | [F] Files | [Q/Ctrl+D] Quit";
     frame.render_widget(
         Paragraph::new(help_text)
+            .wrap(Wrap { trim: true })
             .block(Block::default().borders(Borders::ALL).title("Controls").style(Style::default().fg(Color::Magenta))),
         chunks[3]
     );
@@ -715,6 +717,7 @@ fn ui_file_browser(frame: &mut Frame, status: &PlayerStatus, browser: &FileBrows
     let path_text = browser.current_path.to_string_lossy();
     frame.render_widget(
         Paragraph::new(path_text.as_ref())
+            .wrap(Wrap { trim: true })
             .block(Block::default().borders(Borders::ALL).title("Current Directory").style(theme.status_style())),
         left_chunks[0]
     );
@@ -770,6 +773,7 @@ fn ui_file_browser(frame: &mut Frame, status: &PlayerStatus, browser: &FileBrows
     let browser_help = "[??/jk] Navigate\n[Enter/?/l] Open | [?/h] Up\n[A] Add Dir | [a] Add Item\n[P] Play | [Q] Back";
     frame.render_widget(
         Paragraph::new(browser_help)
+            .wrap(Wrap { trim: true })
             .block(Block::default().borders(Borders::ALL).title("File Browser Controls").style(Style::default().fg(Color::Yellow))),
         left_chunks[2]
     );
@@ -791,8 +795,9 @@ fn ui_file_browser(frame: &mut Frame, status: &PlayerStatus, browser: &FileBrows
         .unwrap_or("No track");
 
     frame.render_widget(
-        Paragraph::new(format!("{}\n{}\nVolume: {}%\nTracks: {}", 
+        Paragraph::new(format!("{}\n{}\nVolume: {}%\nTracks: {}",
             state_text, track_name, status.volume, status.playlist_length))
+            .wrap(Wrap { trim: true })
             .block(Block::default().borders(Borders::ALL).title("Player Status").style(theme.controls_style())),
         right_chunks[0]
     );
@@ -823,6 +828,7 @@ fn ui_file_browser(frame: &mut Frame, status: &PlayerStatus, browser: &FileBrows
     let quick_help = "[Space] Play/Pause\n[S] Stop | [N] Next\n[B] Prev | [+/-] Vol";
     frame.render_widget(
         Paragraph::new(quick_help)
+            .wrap(Wrap { trim: true })
             .block(Block::default().borders(Borders::ALL).title("Quick Controls").style(theme.file_browser_style())),
         right_chunks[2]
     );
@@ -838,13 +844,12 @@ pub async fn run_tui() -> Result<()> {
             Ok(())
         }
         Err(_) => {
-            eprintln!("? Daemon is not running, starting it...");
             // Start daemon in background thread
             std::thread::spawn(move || {
                 let rt = tokio::runtime::Runtime::new().unwrap();
                 rt.block_on(async {
                     if let Err(e) = crate::daemon::start().await {
-                        eprintln!("Failed to start daemon: {}", e);
+                        // Failed to start daemon
                     }
                 });
             });
@@ -857,8 +862,7 @@ pub async fn run_tui() -> Result<()> {
                     tui.run().await.map_err(|e| anyhow::anyhow!("TUI error: {}", e))?;
                     Ok(())
                 }
-                Err(e) => {
-                    eprintln!("Failed to start daemon: {}", e);
+                Err(_e) => {
                     std::process::exit(1);
                 }
             }

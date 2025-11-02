@@ -264,7 +264,7 @@ pub async fn start() -> Result<()> {
         if let Ok(pid) = pid_str.trim().parse::<i32>() {
             // Check if process is still running
             if is_process_running(pid) {
-                println!("Daemon is already running (PID: {})", pid);
+                info!("Daemon is already running (PID: {})", pid);
                 return Ok(());
             }
         }
@@ -276,12 +276,12 @@ pub async fn start() -> Result<()> {
     let pid = std::process::id();
     fs::write(&pid_file, pid.to_string())?;
 
-    println!("Starting daemon (PID: {})...", pid);
+    info!("Starting daemon (PID: {})...", pid);
 
     // Create and run daemon
     let mut daemon = Daemon::new().await?;
 
-    println!("Daemon started successfully");
+    info!("Daemon started successfully");
 
     // Run the daemon in the foreground (this will block)
     if let Err(e) = daemon.run().await {

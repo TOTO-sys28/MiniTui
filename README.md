@@ -27,7 +27,7 @@ A minimal, cross-platform music player with TUI interface, daemon architecture, 
 ```bash
 # Clone repository
 git clone https://github.com/TOTO-sys28/MiniTui.git
-cd musicplayer
+cd MiniTui
 
 # Build
 cargo build --release
@@ -40,7 +40,7 @@ cargo install --path .
 
 Pre-built binaries are available in the `releases/` directory:
 
-- **Linux**: `musicplayer-linux-x86_64` (full-featured with TUI interface)
+- **Linux**: `MiniTui-linux-x86_64` (full-featured with TUI interface)
 - **Windows**: `minitui-windows.zip` (complete package with installer and TUI interface)
 - **macOS**: Coming soon
 

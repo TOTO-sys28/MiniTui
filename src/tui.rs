@@ -257,7 +257,10 @@ impl Tui {
     pub fn new() -> Result<Self> {
         enable_raw_mode()?;
         let mut stderr = io::stderr();
+        #[cfg(not(target_os = "windows"))]
         execute!(stderr, EnterAlternateScreen, EnableMouseCapture)?;
+        #[cfg(target_os = "windows")]
+        execute!(stderr, EnableMouseCapture)?;
         let backend = CrosstermBackend::new(stderr);
         let terminal = Terminal::new(backend)?;
 
@@ -579,9 +582,15 @@ impl Tui {
 
     fn restore(&mut self) -> Result<()> {
         disable_raw_mode()?;
+        #[cfg(not(target_os = "windows"))]
         execute!(
             self.terminal.backend_mut(),
             LeaveAlternateScreen,
+            DisableMouseCapture
+        )?;
+        #[cfg(target_os = "windows")]
+        execute!(
+            self.terminal.backend_mut(),
             DisableMouseCapture
         )?;
         self.terminal.show_cursor()?;

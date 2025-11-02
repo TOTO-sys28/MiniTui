@@ -3,7 +3,7 @@ use std::fs;
 use std::path::PathBuf;
 use tokio::sync::Mutex;
 use std::sync::Arc;
-use tracing::{info, error};
+// use tracing::{info, error};
 
 use crate::ipc::{Command, IpcServer, PlayerStatus, PlaybackState, Response};
 use crate::player::Player;
@@ -31,7 +31,7 @@ impl Daemon {
     }
 
     pub async fn run(&mut self) -> Result<()> {
-        info!("Daemon started");
+        // info!("Daemon started");
 
         let mut next_track_check = tokio::time::interval(tokio::time::Duration::from_millis(500));
 
@@ -49,13 +49,13 @@ impl Daemon {
                                         error!("Failed to send response: {}", e);
                                     }
                                 }
-                                Err(e) => {
-                                    error!("Failed to receive command: {}", e);
-                                }
+                        Err(e) => {
+                            // error!("Failed to send response: {}", e);
+                        }
                             }
                         }
                         Err(e) => {
-                            error!("Failed to accept connection: {}", e);
+                            // error!("Failed to accept connection: {}", e);
                             tokio::time::sleep(tokio::time::Duration::from_millis(100)).await;
                         }
                     }
@@ -67,9 +67,9 @@ impl Daemon {
                     if time_since_manual > std::time::Duration::from_secs(2) &&
                        self.player.is_empty() && self.player.get_state() == PlaybackState::Playing {
                         if let Some(next_track) = self.playlist.lock().await.next() {
-                            info!("Auto-playing next track: {}", next_track);
+                            // info!("Auto-playing next track: {}", next_track);
                             if let Err(e) = self.player.load_track(next_track) {
-                                error!("Failed to load next track: {}", e);
+                                // error!("Failed to load next track: {}", e);
                             }
                         }
                     }
@@ -93,7 +93,7 @@ impl Daemon {
                     // Play specific file
                     match self.player.load_track(path.clone()) {
                         Ok(_) => {
-                            info!("Playing: {}", path);
+                            // info!("Playing: {}", path);
                             Response::Ok
                         }
                         Err(e) => Response::Error(format!("Failed to play: {}", e)),
@@ -103,10 +103,10 @@ impl Daemon {
                     if self.player.get_current_track().is_some() {
                         // Resume if there's a current track
                         match self.player.play() {
-                            Ok(_) => {
-                                info!("Resumed playback");
-                                Response::Ok
-                            }
+                        Ok(_) => {
+                            // info!("Resumed playback");
+                            Response::Ok
+                        }
                             Err(e) => Response::Error(format!("Failed to resume: {}", e)),
                         }
                     } else {
@@ -122,7 +122,7 @@ impl Daemon {
                                 drop(playlist);
                                 match self.player.load_track(first_track.clone()) {
                                     Ok(_) => {
-                                        info!("Playing first track: {}", first_track);
+                                        // info!("Playing first track: {}", first_track);
                                         Response::Ok
                                     }
                                     Err(e) => Response::Error(format!("Failed to play first track: {}", e)),
@@ -137,14 +137,14 @@ impl Daemon {
             }
             Command::Pause => match self.player.pause() {
                 Ok(_) => {
-                    info!("Paused");
+                    // info!("Paused");
                     Response::Ok
                 }
                 Err(e) => Response::Error(format!("Failed to pause: {}", e)),
             },
             Command::Stop => match self.player.stop() {
                 Ok(_) => {
-                    info!("Stopped");
+                    // info!("Stopped");
                     Response::Ok
                 }
                 Err(e) => Response::Error(format!("Failed to stop: {}", e)),
@@ -157,11 +157,11 @@ impl Daemon {
                         drop(playlist);
                         match self.player.load_track(next_track.clone()) {
                             Ok(_) => {
-                                info!("Playing next: {}", next_track);
+                                // info!("Playing next: {}", next_track);
                                 return Response::Ok;
                             }
                             Err(e) => {
-                                error!("Failed to load track {}: {}, trying next", next_track, e);
+                                // error!("Failed to load track {}: {}, trying next", next_track, e);
                                 playlist = self.playlist.lock().await;
                                 continue;
                             }
@@ -181,11 +181,11 @@ impl Daemon {
                         drop(playlist);
                         match self.player.load_track(prev_track.clone()) {
                             Ok(_) => {
-                                info!("Playing previous: {}", prev_track);
+                                // info!("Playing previous: {}", prev_track);
                                 return Response::Ok;
                             }
                             Err(e) => {
-                                error!("Failed to load track {}: {}, trying previous", prev_track, e);
+                                // error!("Failed to load track {}: {}, trying previous", prev_track, e);
                                 playlist = self.playlist.lock().await;
                                 continue;
                             }
@@ -199,7 +199,7 @@ impl Daemon {
             }
             Command::SetVolume { level } => match self.player.set_volume(level) {
                 Ok(_) => {
-                    info!("Volume set to {}", level);
+                    // info!("Volume set to {}", level);
                     Response::Ok
                 }
                 Err(e) => Response::Error(format!("Failed to set volume: {}", e)),
@@ -208,7 +208,7 @@ impl Daemon {
                 let mut playlist = self.playlist.lock().await;
                 match playlist.add_tracks(paths.clone()) {
                     Ok(_) => {
-                        info!("Added {} tracks", paths.len());
+                        // info!("Added {} tracks", paths.len());
                         Response::Ok
                     }
                     Err(e) => Response::Error(format!("Failed to add tracks: {}", e)),
@@ -234,11 +234,11 @@ impl Daemon {
             Command::ClearPlaylist => {
                 let mut playlist = self.playlist.lock().await;
                 playlist.clear();
-                info!("Playlist cleared");
+                // info!("Playlist cleared");
                 Response::Ok
             }
             Command::Shutdown => {
-                info!("Shutting down daemon");
+                // info!("Shutting down daemon");
                 std::process::exit(0);
             }
         }
@@ -264,7 +264,7 @@ pub async fn start() -> Result<()> {
         if let Ok(pid) = pid_str.trim().parse::<i32>() {
             // Check if process is still running
             if is_process_running(pid) {
-                info!("Daemon is already running (PID: {})", pid);
+                // info!("Daemon is already running (PID: {})", pid);
                 return Ok(());
             }
         }
@@ -276,16 +276,16 @@ pub async fn start() -> Result<()> {
     let pid = std::process::id();
     fs::write(&pid_file, pid.to_string())?;
 
-    info!("Starting daemon (PID: {})...", pid);
+    // info!("Starting daemon (PID: {})...", pid);
 
     // Create and run daemon
     let mut daemon = Daemon::new().await?;
 
-    info!("Daemon started successfully");
+    // info!("Daemon started successfully");
 
     // Run the daemon in the foreground (this will block)
     if let Err(e) = daemon.run().await {
-        error!("Daemon error: {}", e);
+        // error!("Daemon error: {}", e);
         return Err(e);
     }
 
